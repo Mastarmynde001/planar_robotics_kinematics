@@ -1,0 +1,55 @@
+name: 2-DOF Kinematics CI Pipeline
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  build-test-audit:
+    name: Build, Test & Audit (Ubuntu 24.04)
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Install System Dependencies & Toolchain
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            cmake \
+            g++ \
+            catch2 \
+            python3-dev \
+            python3-pip \
+            python3-pytest \
+            python3-pytest-cov \
+            python3-numpy \
+            python3-matplotlib \
+            valgrind
+
+      - name: Configure CMake Build
+        run: |
+          cmake -B build -S .
+
+      - name: Build C++ Core Library, Tests & Python Extension Module
+        run: |
+          cmake --build build --parallel $(nproc)
+
+      - name: Run C++ Catch2 Unit Tests & Benchmarks
+        run: |
+          ctest --test-dir build --output-on-failure
+
+      - name: Run Valgrind Memory Leak Audit
+        run: |
+          valgrind --leak-check=full --error-exitcode=1 ./build/kinematics_tests
+
+      - name: Run Python Pytest Suite & Coverage Report
+        run: |
+          PYTHONPATH=build:. pytest --cov=. --cov-report=term-missing tests/
+
+      - name: Execute Python Trajectory Visualizer Sanity Check
+        run: |
+          PYTHONPATH=build:. python3 app.py

@@ -1,0 +1,28 @@
+# Build directory
+build/
+bin/
+lib/
+*.a
+*.so
+*.o
+*.obj
+*.dylib
+*.dll
+
+# Python artifacts
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.coverage
+htmlcov/
+*.egg-info/
+
+# Generated visual output
+trajectory_snapshot.png
+trajectory_animation.gif
+
+# IDE / System configs
+.vscode/
+.idea/
+.DS_Store
